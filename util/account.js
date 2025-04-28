@@ -1,3 +1,15 @@
+module.exports.mock_waiting_account = [
+	{
+		id: 1,
+		email: 'abc@email.com',
+		token: '123456',
+	},
+	{
+		id: 2,
+		email: 'def@email.com',
+		token: '789012',
+	},
+];
 module.exports.mock_account = [
 	{
 		id: 1,

@@ -1,5 +1,5 @@
 const express = require('express');
-const { mock_account } = require('../../util/account');
+const { mock_account, mock_waiting_account } = require('../../util/account');
 
 const account = express.Router();
 
@@ -65,8 +65,39 @@ account.post('/register', (req, res, next) => {
 
 	// Connect to database
 
+	// Send email to activate account
+
 	res.result = {
 		msg: 'Create account successfully',
+	};
+	next();
+});
+account.patch('/activate-account', (req, res, next) => {
+	const payload = req.body;
+	const { email, token } = payload;
+
+	const waitingAccount = mock_waiting_account.find((account) => account.email === email);
+
+	if (!waitingAccount) {
+		next({
+			errStatus: 404,
+			type: 'AccountNotFound',
+			message: 'Account not found',
+		});
+	}
+
+	if (waitingAccount.token !== token) {
+		next({
+			errStatus: 400,
+			type: 'InvalidCode',
+			message: 'Invalid code',
+		});
+	}
+
+	// Connect to database
+
+	res.result = {
+		msg: 'Active account successfully',
 	};
 	next();
 });

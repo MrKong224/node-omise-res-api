@@ -6,6 +6,7 @@ const { CONFIG } = require('./App/config');
 const { handlerCallAPI, handlerRespAPI, handlerError } = require('./App/middleware/handler');
 
 const { account } = require('./src/api/account');
+const { cart } = require('./src/api/cart');
 
 const app = express();
 const PORT = CONFIG.PORT;
@@ -44,6 +45,7 @@ app.get('/hello', (req, res, next) => {
 });
 
 app.use('/api/account', account);
+app.use('/api/cart', cart);
 
 app.use(handlerRespAPI);
 app.use(handlerError);
