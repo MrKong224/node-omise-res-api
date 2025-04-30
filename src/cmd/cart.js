@@ -91,6 +91,12 @@ function startInteractiveMode() {
 					}
 					break;
 
+				case 'list-vouchers':
+					const listVouchersResult = cart.listVouchers();
+					console.log('Voucher codes:');
+					console.log(JSON.stringify(listVouchersResult, null, 2));
+					break;
+
 				case 'get':
 					const cartContent = cart.getCart();
 					console.log('Cart content:');
@@ -131,10 +137,13 @@ function showAvailableCommands() {
 	console.log('  add <productId> <quantity> <price> - Add a product to cart');
 	console.log('  update <productId> <quantity> <price> - Update product quantity and price in cart');
 	console.log('  remove <productId> - Remove a product from cart');
-	console.log('  add-voucher <code> - Add a voucher code to cart');
-	console.log('  remove-voucher <code> - Remove a voucher code from cart');
 	console.log('  get - Get contents of cart');
 	console.log('  clear - Empty the cart');
+	console.log('--------------------------------');
+	console.log('  add-voucher <code> - Add a voucher code to cart');
+	console.log('  remove-voucher <code> - Remove a voucher code from cart');
+	console.log('  list-vouchers - List all voucher codes');
+	console.log('--------------------------------');
 	console.log('  exit - Exit the program');
 }
 

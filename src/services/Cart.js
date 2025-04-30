@@ -100,6 +100,10 @@ class Cart {
 			throw new Error('Voucher code must be a valid string');
 		}
 
+		if (this.items.length <= 0) {
+			throw new Error('Cart is empty');
+		}
+
 		const voucherCode = this.listVoucherCodes.find((voucher) => voucher.code === code);
 
 		if (!voucherCode) {
@@ -108,6 +112,12 @@ class Cart {
 
 		if (this.voucherCodes.includes(voucherCode)) {
 			throw new Error('Voucher code already applied');
+		}
+
+		if (voucherCode.type === 'PERCENTAGE') {
+			if (this.calculateTotalPrice(this) < voucherCode.minTotalAmount) {
+				throw new Error('Voucher code not applicable');
+			}
 		}
 
 		this.voucherCodes.push(voucherCode);
@@ -127,6 +137,9 @@ class Cart {
 		}
 
 		return this.getCart();
+	}
+	listVouchers() {
+		return this.listVoucherCodes;
 	}
 
 	getCart() {
