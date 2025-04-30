@@ -18,11 +18,12 @@ const checkRequest = async (req) => {
 			'POST/api/account/login',
 			'POST/api/account/request-reset-pwd',
 			'POST/api/account/reset-pwd',
+			'POST/api/account/activate-account',
 		];
-		if (!bypassApiAccessKey.includes(originURL)) {
-			const accId = await checkAuthen(req);
-			req.curReq.accID = accId;
-		}
+		// if (!bypassApiAccessKey.includes(originURL)) {
+		// 	const accId = await checkAuthen(req);
+		// 	req.curReq.accID = accId;
+		// }
 	} catch (error) {
 		throw error;
 	}
