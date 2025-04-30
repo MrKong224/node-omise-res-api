@@ -4,11 +4,38 @@
 class Cart {
 	constructor() {
 		this.items = [];
-		this.discounts = [];
+		this.voucherCodes = [];
 	}
 
+	listVoucherCodes = [
+		{
+			code: 'FX100',
+			type: 'FIXED',
+			discount: 100,
+		},
+		{
+			code: 'FX200',
+			type: 'FIXED',
+			discount: 200,
+		},
+		{
+			code: 'P10MX100',
+			type: 'PERCENTAGE',
+			percentage: 0.1,
+			minTotalAmount: 2000,
+			maxDiscount: 100,
+		},
+		{
+			code: 'P25MX300',
+			type: 'PERCENTAGE',
+			percentage: 0.25,
+			minTotalAmount: 2000,
+			maxDiscount: 300,
+		},
+	];
+
 	// Product
-	addProduct(productId, quantity) {
+	addProduct(productId, quantity, price) {
 		if (!productId || typeof productId !== 'number') {
 			throw new Error('Product ID must be a valid number');
 		}
@@ -21,13 +48,14 @@ class Cart {
 
 		if (existingProductIndex !== -1) {
 			this.items[existingProductIndex].quantity += quantity;
+			this.items[existingProductIndex].price += price;
 		} else {
-			this.items.push({ productId, quantity });
+			this.items.push({ productId, quantity, price });
 		}
 
 		return this.getCart();
 	}
-	updateProduct(productId, quantity) {
+	updateProduct(productId, quantity, price) {
 		if (!productId || typeof productId !== 'number') {
 			throw new Error('Product ID must be a valid number');
 		}
@@ -46,6 +74,7 @@ class Cart {
 			return this.removeProduct(productId);
 		} else {
 			this.items[existingProductIndex].quantity = quantity;
+			this.items[existingProductIndex].price = price;
 		}
 
 		return this.getCart();
@@ -66,24 +95,34 @@ class Cart {
 	}
 
 	// Discount code
-	addDiscount(code) {
+	addVoucher(code) {
 		if (!code || typeof code !== 'string') {
-			throw new Error('Discount code must be a valid string');
+			throw new Error('Voucher code must be a valid string');
 		}
 
-		this.discounts.push(code);
+		const voucherCode = this.listVoucherCodes.find((voucher) => voucher.code === code);
+
+		if (!voucherCode) {
+			throw new Error('Voucher code not found');
+		}
+
+		if (this.voucherCodes.includes(voucherCode)) {
+			throw new Error('Voucher code already applied');
+		}
+
+		this.voucherCodes.push(voucherCode);
 
 		return this.getCart();
 	}
-	removeDiscount(code) {
+	removeVoucher(code) {
 		if (!code || typeof code !== 'string') {
-			throw new Error('Discount code must be a valid string');
+			throw new Error('Voucher code must be a valid string');
 		}
 
-		const initialLength = this.discounts.length;
-		this.discounts = this.discounts.filter((discount) => discount !== code);
+		const initialLength = this.voucherCodes.length;
+		this.voucherCodes = this.voucherCodes.filter((voucher) => voucher.code !== code);
 
-		if (this.discounts.length === initialLength) {
+		if (this.voucherCodes.length === initialLength) {
 			return null;
 		}
 
@@ -95,13 +134,43 @@ class Cart {
 			items: [...this.items],
 			totalItems: this.items.reduce((sum, item) => sum + item.quantity, 0),
 			totalUniqueItems: this.items.length,
-			discountCodes: this.discounts,
+			totalPrice: this.calculateTotalPrice(this),
+			voucherCodes: this.voucherCodes,
 		};
 	}
 
 	destroy() {
 		this.items = [];
 		return this.getCart();
+	}
+
+	calculateTotalPrice(cart) {
+		let totalPrice = cart.items.reduce((sum, item) => sum + item.price, 0);
+
+		if (cart.voucherCodes.length <= 0 || totalPrice <= 0) {
+			return totalPrice;
+		}
+
+		for (const voucher of cart.voucherCodes) {
+			let discountAmount = 0;
+			switch (voucher.type) {
+				case 'FIXED':
+					totalPrice -= voucher.discount;
+					return totalPrice < 0 ? 0 : totalPrice;
+
+				case 'PERCENTAGE':
+					if (totalPrice >= voucher.minTotalAmount) {
+						discountAmount = totalPrice * voucher.percentage;
+						totalPrice -= discountAmount > voucher.maxDiscount ? voucher.maxDiscount : discountAmount;
+					}
+					return totalPrice < 0 ? 0 : totalPrice;
+
+				default:
+					return totalPrice;
+			}
+		}
+
+		return totalPrice;
 	}
 }
 
