@@ -7,6 +7,33 @@ class Cart {
 		this.voucherCodes = [];
 	}
 
+	listActiveProducts = [
+		{
+			productId: 1,
+			name: 'Product 1',
+			price: 100,
+			promotion: [
+				{
+					type: 'FREEBIE',
+					productId: 2,
+					quantity: 1,
+				},
+			],
+		},
+		{
+			productId: 2,
+			name: 'Product 2',
+			price: 200,
+			promotion: [],
+		},
+		{
+			productId: 3,
+			name: 'Product 3',
+			price: 300,
+			promotion: [],
+		},
+	];
+
 	listVoucherCodes = [
 		{
 			code: 'FX100',
@@ -35,7 +62,7 @@ class Cart {
 	];
 
 	// Product
-	addProduct(productId, quantity, price) {
+	addProduct(productId, quantity) {
 		if (!productId || typeof productId !== 'number') {
 			throw new Error('Product ID must be a valid number');
 		}
@@ -44,18 +71,29 @@ class Cart {
 			throw new Error('Quantity must be a positive number');
 		}
 
+		const product = this.listActiveProducts.find((product) => product.productId === productId);
+
+		if (!product) {
+			throw new Error('Product not found');
+		}
+
+		const price = product.price * quantity;
+
 		const existingProductIndex = this.items.findIndex((item) => item.productId === productId);
 
 		if (existingProductIndex !== -1) {
 			this.items[existingProductIndex].quantity += quantity;
 			this.items[existingProductIndex].price += price;
 		} else {
-			this.items.push({ productId, quantity, price });
+			this.items.push({ productId, quantity, price, promotions: [] });
 		}
+
+		const productIndex = this.items.findIndex((item) => item.productId === productId);
+		this.checkPromotion(product.promotion, this.items[productIndex]);
 
 		return this.getCart();
 	}
-	updateProduct(productId, quantity, price) {
+	updateProduct(productId, quantity) {
 		if (!productId || typeof productId !== 'number') {
 			throw new Error('Product ID must be a valid number');
 		}
@@ -64,8 +102,14 @@ class Cart {
 			throw new Error('Quantity must be a positive number');
 		}
 
-		const existingProductIndex = this.items.findIndex((item) => item.productId === productId);
+		const product = this.listActiveProducts.find((product) => product.productId === productId);
+		if (!product) {
+			throw new Error('Product not found');
+		}
 
+		const price = product.price * quantity;
+
+		const existingProductIndex = this.items.findIndex((item) => item.productId === productId);
 		if (existingProductIndex === -1) {
 			return null;
 		}
@@ -76,6 +120,9 @@ class Cart {
 			this.items[existingProductIndex].quantity = quantity;
 			this.items[existingProductIndex].price = price;
 		}
+
+		const productIndex = this.items.findIndex((item) => item.productId === productId);
+		this.checkPromotion(product.promotion, this.items[productIndex]);
 
 		return this.getCart();
 	}
@@ -92,6 +139,28 @@ class Cart {
 		}
 
 		return this.getCart();
+	}
+	checkPromotion(promotions, product) {
+		if (promotions.length <= 0) {
+			return null;
+		}
+
+		for (const promotion of promotions) {
+			product.promotions = [];
+			if (promotion.type === 'FREEBIE') {
+				const freebieProduct = this.listActiveProducts.find((product) => product.productId === promotion.productId);
+				if (freebieProduct) {
+					product.promotions.push({
+						type: 'FREEBIE',
+						productId: freebieProduct.productId,
+						quantity: product.quantity * promotion.quantity,
+					});
+				}
+			}
+		}
+	}
+	listProducts() {
+		return this.listActiveProducts;
 	}
 
 	// Discount code
@@ -151,7 +220,6 @@ class Cart {
 			voucherCodes: this.voucherCodes,
 		};
 	}
-
 	destroy() {
 		this.items = [];
 		return this.getCart();

@@ -22,28 +22,26 @@ function startInteractiveMode() {
 		try {
 			switch (command) {
 				case 'add':
-					if (args.length !== 4) {
-						console.log('Usage: add <productId> <quantity> <price>');
+					if (args.length !== 3) {
+						console.log('Usage: add <productId> <quantity>');
 						break;
 					}
 					const addResult = cart.addProduct(
 						Number(args[1]), // productId
 						Number(args[2]), // quantity
-						Number(args[3]), // price
 					);
 					console.log('Product added:');
 					console.log(JSON.stringify(addResult, null, 2));
 					break;
 
 				case 'update':
-					if (args.length !== 4) {
-						console.log('Usage: update <productId> <quantity> <price>');
+					if (args.length !== 3) {
+						console.log('Usage: update <productId> <quantity>');
 						break;
 					}
 					const updateResult = cart.updateProduct(
 						Number(args[1]), // productId
 						Number(args[2]), // quantity
-						Number(args[3]), // price
 					);
 					if (updateResult === null) {
 						console.log('Product not found in cart');
@@ -65,6 +63,12 @@ function startInteractiveMode() {
 						console.log('Product removed:');
 						console.log(JSON.stringify(removeResult, null, 2));
 					}
+					break;
+
+				case 'list-products':
+					const listProductsResult = cart.listProducts();
+					console.log('Products:');
+					console.log(JSON.stringify(listProductsResult, null, 2));
 					break;
 
 				case 'add-voucher':
@@ -134,9 +138,10 @@ function startInteractiveMode() {
 
 function showAvailableCommands() {
 	console.log('Available commands:');
-	console.log('  add <productId> <quantity> <price> - Add a product to cart');
-	console.log('  update <productId> <quantity> <price> - Update product quantity and price in cart');
+	console.log('  add <productId> <quantity> - Add a product to cart');
+	console.log('  update <productId> <quantity> - Update product quantity and price in cart');
 	console.log('  remove <productId> - Remove a product from cart');
+	console.log('  list-products - List all products');
 	console.log('  get - Get contents of cart');
 	console.log('  clear - Empty the cart');
 	console.log('--------------------------------');
